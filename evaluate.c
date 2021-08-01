@@ -1,0 +1,179 @@
+#include <ctype.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "evaluate.h"
+#ifdef EVAL_DEBUG
+#include "debug.h"
+#endif
+
+static op_status eval_op_from_stk(ops_stack* ops_stk,
+                                  operands_stack* operands_stk) {
+    const struct operator* op_struct;
+    do {
+        op_struct = STACK_POP(*ops_stk);
+    } while (op_struct->operands_num == 0 && ops_stk->length > 0);
+
+    LOG_FMSG("op = '%s' , operands_num = '%u' , precedence = '%u'",
+             op_struct->op, (unsigned)op_struct->operands_num,
+             (unsigned)op_struct->precedence);
+
+    if (op_struct->operands_num == 0) {
+        LOG_MSG("op_struct->operands_num == 0 - mismatched parentheses?");
+        return OP_MISMATCHED_PARENTHESES;
+    }
+
+    long double res = 0.0L;
+    if (op_struct->operands_num == 1) {
+        if (operands_stk->length == 0) {
+            LOG_FMSG(
+                "found no operands for operator '%s', which takes one operand",
+                op_struct->op);
+            return OP_SYNTAX_ERROR;
+        }
+        long double operand_1 = STACK_POP(*operands_stk)->value;
+        LOG_FMSG("evaluating '%s' '%Lf'", op_struct->op, operand_1);
+        op_status ret = op_struct->cb(&res, operand_1);
+        if (ret != OP_SUCCESS)
+            return ret;
+    } else if (op_struct->operands_num == 2) {
+        if (operands_stk->length == 0) {
+            LOG_FMSG(
+                "found no operands for operator '%s', which takes two operands",
+                op_struct->op);
+            return OP_SYNTAX_ERROR;
+        }
+        struct operand* op2 = STACK_PEEK(*operands_stk);
+        struct operand* op1;
+        if (operands_stk->length < 2 &&
+            !(op2 && op2->pos > op_struct->pos &&
+              (!strcmp(op_struct->op, "+") || !strcmp(op_struct->op, "-")))
+
+        ) {
+            // reject operators not valid as unary
+            return OP_SYNTAX_ERROR;
+        }
+        op2 = STACK_POP(*operands_stk);
+        op1 = STACK_POP(*operands_stk);
+        long double val_2 = op2 ? op2->value : 0;
+        long double val_1 = op1 ? op1->value : 0;
+
+        LOG_FMSG("evaluating '%Lf' '%s' '%Lf'", val_1, op_struct->op, val_2);
+        op_status ret = op_struct->cb(&res, val_1, val_2);
+        if (ret != OP_SUCCESS)
+            return ret;
+    }
+    LOG_FMSG("pushing result %Lf", res);
+    struct operand opr = {.value = res};
+    if (STACK_PUSH(*operands_stk, opr))
+        return OP_ERROR;
+
+    return OP_SUCCESS;
+}
+
+op_status eval_stk(ops_stack* ops_stk,
+                   operands_stack* operands_stk,
+                   const char* expr) {
+    // reset stacks
+    operands_stk->length = 0;
+    ops_stk->length = 0;
+
+    struct operator op_struct;
+    for (unsigned i = 0; expr[i]; i++) {
+        LOG_FMSG("expr starting from %zu : '%s'", i, expr + i);
+
+        if (isdigit(expr[i])) {
+            char* end;
+            struct operand opr;
+            opr.value = strtold(&expr[i], &end);
+            if (errno == ERANGE)
+                return OP_OVERFLOW;
+            opr.pos = i;
+            i += (end - &expr[i] - 1);
+            LOG_FMSG("pushing operand %Lf", opr.value);
+            if (STACK_PUSH(*operands_stk, opr))
+                return OP_ERROR;
+        } else if (get_operator(&op_struct, &expr[i])) {
+            if (!strcmp(op_struct.op, "(")) {
+                LOG_FMSG("pushing left parenthesis : %s\n", op_struct.op);
+                if (STACK_PUSH(*ops_stk, op_struct))
+                    return OP_ERROR;
+            } else if (!strcmp(op_struct.op, ")")) {
+                struct operator* top_op = NULL;
+                bool found_left_parens = false;
+                while (ops_stk->length) {
+                    top_op = STACK_PEEK(*ops_stk);
+                    if (!strcmp(top_op->op, "(")) {
+                        found_left_parens = true;
+                        break;
+                    }
+                    op_status ret = eval_op_from_stk(ops_stk, operands_stk);
+                    if (ret != OP_SUCCESS)
+                        return ret;
+                }
+                if (!found_left_parens) {
+                    return OP_MISMATCHED_PARENTHESES;
+                } else {
+                    // discard left parenthesis
+                    STACK_POP(*ops_stk);
+                }
+            } else {
+                struct operator* top_op;
+                while ((top_op = STACK_PEEK(*ops_stk)) &&
+                       op_struct.precedence >= top_op->precedence &&
+                       strcmp(top_op->op, "(")) {
+                    op_status ret = eval_op_from_stk(ops_stk, operands_stk);
+                    if (ret != OP_SUCCESS)
+                        return ret;
+                }
+
+                op_struct.pos = i;
+                LOG_FMSG("pushing operator: %s\n", op_struct.op);
+                if (STACK_PUSH(*ops_stk, op_struct))
+                    return OP_ERROR;
+            }
+
+            i += strlen(op_struct.op) - 1;
+        }
+    }
+    while (ops_stk->length) {
+        struct operator* top_op = STACK_PEEK(*ops_stk);
+        if (!strcmp(top_op->op, ")") || !strcmp(top_op->op, "(")) {
+            return OP_MISMATCHED_PARENTHESES;
+        }
+        op_status ret = eval_op_from_stk(ops_stk, operands_stk);
+        if (ret != OP_SUCCESS)
+            return ret;
+    }
+
+    LOG_FMSG(
+        "finished evaluation - ops_stk->length = %zu , operands_stk->length = "
+        "%zu",
+        ops_stk->length, operands_stk->length);
+
+    if (!operands_stk->length) {
+        // not a math expression?
+        return OP_SYNTAX_ERROR;
+    }
+
+    return OP_SUCCESS;
+}
+
+op_status eval(const char* expr, long double* res) {
+    ops_stack ops_stk;
+    if (STACK_INIT(ops_stk))
+        return OP_ERROR;
+    operands_stack operands_stk;
+    if (STACK_INIT(operands_stk))
+        return OP_ERROR;
+    op_status ret = eval_stk(&ops_stk, &operands_stk, expr);
+    if (ret == OP_SUCCESS) {
+        *res = STACK_POP(operands_stk)->value;
+    }
+    STACK_FREE(ops_stk);
+    STACK_FREE(operands_stk);
+    return ret;
+}
