@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
@@ -284,7 +285,7 @@ int get_operator(struct operator* op_struct, const char* expr) {
     for (unsigned char i = 0; i < OPS_NUM; i++) {
         unsigned char j;
         for (j = 0; operators[i].op[j] && expr[j]; j++) {
-            if (operators[i].op[j] != expr[j])
+            if (tolower(operators[i].op[j]) != tolower(expr[j]))
                 break;
         }
         if (!operators[i].op[j]) {
