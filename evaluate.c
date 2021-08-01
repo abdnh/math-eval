@@ -110,9 +110,10 @@ op_status eval_with_state(eval_state *state, const char *expr) {
                 return OP_ERROR;
         } else if (get_operator(&op_struct, &expr[i])) {
             if (!strcmp(op_struct.op, "(")) {
-                LOG_FMSG("pushing left parenthesis : %s\n", op_struct.op);
-                if (STACK_PUSH(state->ops_stack, op_struct))
+                LOG_FMSG("pushing left parenthesis: %s\n", op_struct.op);
+                if (STACK_PUSH(state->ops_stack, op_struct)) {
                     return OP_ERROR;
+                }
             } else if (!strcmp(op_struct.op, ")")) {
                 struct operator* top_op = NULL;
                 bool found_left_parens = false;
@@ -147,8 +148,10 @@ op_status eval_with_state(eval_state *state, const char *expr) {
                 if (STACK_PUSH(state->ops_stack, op_struct))
                     return OP_ERROR;
             }
-
             i += strlen(op_struct.op) - 1;
+        } else if (!isspace(expr[i])) {
+            // not a valid token
+            return OP_SYNTAX_ERROR;
         }
     }
     while (state->ops_stack.length) {

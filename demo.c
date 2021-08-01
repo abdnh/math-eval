@@ -15,7 +15,7 @@ int main(void) {
     setbuf(stderr, NULL);
 
     eval_state state;
-    if(!eval_init(&state)) {
+    if (!eval_init(&state)) {
         fatal("out of memory");
     }
 
@@ -29,7 +29,7 @@ int main(void) {
                 error("internal error occured");
                 break;
             case OP_SYNTAX_ERROR:
-                error("syntax Error");
+                error("invalid expression");
                 break;
             case OP_DIV_BY_ZERO:
                 error("division by zero");
@@ -45,7 +45,7 @@ int main(void) {
                 break;
             default: {
                 long double res;
-                if(eval_get_result(&state, &res) != OP_SUCCESS) {
+                if (eval_get_result(&state, &res) != OP_SUCCESS) {
                     fatal("unknown error occured");
                 }
                 printf("%Lf\n", res);
