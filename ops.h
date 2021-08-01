@@ -6,6 +6,7 @@
 
 #include "debug.h"
 
+// the status codes that can be returned by various operation callbacks in addition to the functions in evaluate.h
 typedef enum op_status {
     OP_SUCCESS,
     OP_ERROR,

@@ -10,9 +10,25 @@
 #include "debug.h"
 #endif
 
-static op_status eval_op_from_stk(ops_stack* ops_stk,
-                                  operands_stack* operands_stk) {
-    const struct operator* op_struct = STACK_POP(*ops_stk);
+bool eval_init(eval_state *state) {
+    return !STACK_INIT(state->ops_stack) && !STACK_INIT(state->operands_stack);
+}
+
+void eval_free(eval_state *state) {
+    STACK_FREE(state->ops_stack);
+    STACK_FREE(state->operands_stack);
+}
+
+op_status eval_get_result(eval_state *state, long double *result) {
+    struct operand *opr = STACK_POP(state->operands_stack);
+    if (!opr)
+        return OP_ERROR;
+    *result = opr->value;
+    return OP_SUCCESS;
+}
+
+static op_status eval_op_from_stk(eval_state *state) {
+    const struct operator* op_struct = STACK_POP(state->ops_stack);
     LOG_FMSG("op = '%s' , operands_num = '%u' , precedence = '%u'",
              op_struct->op, (unsigned)op_struct->operands_num,
              (unsigned)op_struct->precedence);
@@ -26,27 +42,27 @@ static op_status eval_op_from_stk(ops_stack* ops_stk,
         }
     }
     if (op_struct->operands_num == 1) {
-        if (operands_stk->length == 0) {
+        if (state->operands_stack.length == 0) {
             LOG_FMSG(
                 "found no operands for operator '%s', which takes one operand",
                 op_struct->op);
             return OP_SYNTAX_ERROR;
         }
-        long double operand_1 = STACK_POP(*operands_stk)->value;
+        long double operand_1 = STACK_POP(state->operands_stack)->value;
         LOG_FMSG("evaluating '%s' '%Lf'", op_struct->op, operand_1);
         op_status ret = op_struct->cb(&res, operand_1);
         if (ret != OP_SUCCESS)
             return ret;
     } else if (op_struct->operands_num == 2) {
-        if (operands_stk->length == 0) {
+        if (state->operands_stack.length == 0) {
             LOG_FMSG(
                 "found no operands for operator '%s', which takes two operands",
                 op_struct->op);
             return OP_SYNTAX_ERROR;
         }
-        struct operand* op2 = STACK_PEEK(*operands_stk);
-        struct operand* op1;
-        if (operands_stk->length < 2 &&
+        struct operand *op2 = STACK_PEEK(state->operands_stack);
+        struct operand *op1;
+        if (state->operands_stack.length < 2 &&
             !(op2 && op2->pos > op_struct->pos &&
               (!strcmp(op_struct->op, "+") || !strcmp(op_struct->op, "-")))
 
@@ -54,8 +70,8 @@ static op_status eval_op_from_stk(ops_stack* ops_stk,
             // reject operators not valid as unary
             return OP_SYNTAX_ERROR;
         }
-        op2 = STACK_POP(*operands_stk);
-        op1 = STACK_POP(*operands_stk);
+        op2 = STACK_POP(state->operands_stack);
+        op1 = STACK_POP(state->operands_stack);
         long double val_2 = op2 ? op2->value : 0;
         long double val_1 = op1 ? op1->value : 0;
 
@@ -66,25 +82,23 @@ static op_status eval_op_from_stk(ops_stack* ops_stk,
     }
     LOG_FMSG("pushing result %Lf", res);
     struct operand opr = {.value = res};
-    if (STACK_PUSH(*operands_stk, opr))
+    if (STACK_PUSH(state->operands_stack, opr))
         return OP_ERROR;
 
     return OP_SUCCESS;
 }
 
-op_status eval_stk(ops_stack* ops_stk,
-                   operands_stack* operands_stk,
-                   const char* expr) {
+op_status eval_with_state(eval_state *state, const char *expr) {
     // reset stacks
-    operands_stk->length = 0;
-    ops_stk->length = 0;
+    state->operands_stack.length = 0;
+    state->ops_stack.length = 0;
 
     struct operator op_struct;
     for (unsigned i = 0; expr[i]; i++) {
         LOG_FMSG("expr starting from %zu : '%s'", i, expr + i);
 
         if (isdigit(expr[i])) {
-            char* end;
+            char *end;
             struct operand opr;
             opr.value = strtold(&expr[i], &end);
             if (errno == ERANGE)
@@ -92,23 +106,23 @@ op_status eval_stk(ops_stack* ops_stk,
             opr.pos = i;
             i += (end - &expr[i] - 1);
             LOG_FMSG("pushing operand %Lf", opr.value);
-            if (STACK_PUSH(*operands_stk, opr))
+            if (STACK_PUSH(state->operands_stack, opr))
                 return OP_ERROR;
         } else if (get_operator(&op_struct, &expr[i])) {
             if (!strcmp(op_struct.op, "(")) {
                 LOG_FMSG("pushing left parenthesis : %s\n", op_struct.op);
-                if (STACK_PUSH(*ops_stk, op_struct))
+                if (STACK_PUSH(state->ops_stack, op_struct))
                     return OP_ERROR;
             } else if (!strcmp(op_struct.op, ")")) {
                 struct operator* top_op = NULL;
                 bool found_left_parens = false;
-                while (ops_stk->length) {
-                    top_op = STACK_PEEK(*ops_stk);
+                while (state->ops_stack.length) {
+                    top_op = STACK_PEEK(state->ops_stack);
                     if (!strcmp(top_op->op, "(")) {
                         found_left_parens = true;
                         break;
                     }
-                    op_status ret = eval_op_from_stk(ops_stk, operands_stk);
+                    op_status ret = eval_op_from_stk(state);
                     if (ret != OP_SUCCESS)
                         return ret;
                 }
@@ -116,33 +130,33 @@ op_status eval_stk(ops_stack* ops_stk,
                     return OP_MISMATCHED_PARENTHESES;
                 } else {
                     // discard left parenthesis
-                    STACK_POP(*ops_stk);
+                    STACK_POP(state->ops_stack);
                 }
             } else {
                 struct operator* top_op;
-                while ((top_op = STACK_PEEK(*ops_stk)) &&
+                while ((top_op = STACK_PEEK(state->ops_stack)) &&
                        op_struct.precedence >= top_op->precedence &&
                        strcmp(top_op->op, "(")) {
-                    op_status ret = eval_op_from_stk(ops_stk, operands_stk);
+                    op_status ret = eval_op_from_stk(state);
                     if (ret != OP_SUCCESS)
                         return ret;
                 }
 
                 op_struct.pos = i;
                 LOG_FMSG("pushing operator: %s\n", op_struct.op);
-                if (STACK_PUSH(*ops_stk, op_struct))
+                if (STACK_PUSH(state->ops_stack, op_struct))
                     return OP_ERROR;
             }
 
             i += strlen(op_struct.op) - 1;
         }
     }
-    while (ops_stk->length) {
-        struct operator* top_op = STACK_PEEK(*ops_stk);
+    while (state->ops_stack.length) {
+        struct operator* top_op = STACK_PEEK(state->ops_stack);
         if (!strcmp(top_op->op, ")") || !strcmp(top_op->op, "(")) {
             return OP_MISMATCHED_PARENTHESES;
         }
-        op_status ret = eval_op_from_stk(ops_stk, operands_stk);
+        op_status ret = eval_op_from_stk(state);
         if (ret != OP_SUCCESS)
             return ret;
     }
@@ -152,7 +166,7 @@ op_status eval_stk(ops_stack* ops_stk,
         "%zu",
         ops_stk->length, operands_stk->length);
 
-    if (!operands_stk->length) {
+    if (!state->operands_stack.length) {
         // not a math expression?
         return OP_SYNTAX_ERROR;
     }
@@ -160,18 +174,15 @@ op_status eval_stk(ops_stack* ops_stk,
     return OP_SUCCESS;
 }
 
-op_status eval(const char* expr, long double* res) {
-    ops_stack ops_stk;
-    if (STACK_INIT(ops_stk))
+op_status eval(const char *expr, long double *res) {
+    eval_state state;
+    if (!eval_init(&state))
         return OP_ERROR;
-    operands_stack operands_stk;
-    if (STACK_INIT(operands_stk))
-        return OP_ERROR;
-    op_status ret = eval_stk(&ops_stk, &operands_stk, expr);
+    op_status ret = eval_with_state(&state, expr);
     if (ret == OP_SUCCESS) {
-        *res = STACK_POP(operands_stk)->value;
+        ret = eval_get_result(&state, res);
     }
-    STACK_FREE(ops_stk);
-    STACK_FREE(operands_stk);
+    eval_free(&state);
+
     return ret;
 }

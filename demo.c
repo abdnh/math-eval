@@ -4,7 +4,9 @@
 #include "debug.h"
 #include "evaluate.h"
 
-#define error(msg) fprintf(stderr, "Error: %s\n", msg);
+#define error(msg) fprintf(stderr, "Error: %s\n", msg)
+
+#define fatal(msg) fprintf(stderr, "Fatal: %s\n", msg)
 
 #define BUFFER_SIZE 1000
 
@@ -12,18 +14,16 @@ int main(void) {
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
 
-    ops_stack ops_stk;
-    if (STACK_INIT(ops_stk))
-        return EXIT_FAILURE;
-    operands_stack operands_stk;
-    if (STACK_INIT(operands_stk))
-        return EXIT_FAILURE;
+    eval_state state;
+    if(eval_init(&state) != OP_SUCCESS) {
+        fatal("out of memory");
+    }
 
     puts("Enter expressions to evaluate:");
 
     char buffer[BUFFER_SIZE];
     while (fgets(buffer, sizeof(buffer), stdin)) {
-        op_status eval_ret = eval_stk(&ops_stk, &operands_stk, buffer);
+        op_status eval_ret = eval_with_state(&state, buffer);
         switch (eval_ret) {
             case OP_ERROR:
                 error("internal error occured");
@@ -44,7 +44,10 @@ int main(void) {
                 error("mismatched parentheses");
                 break;
             default: {
-                long double res = STACK_POP(operands_stk)->value;
+                long double res;
+                if(eval_get_result(&state, &res) != OP_SUCCESS) {
+                    fatal("unknown error occured");
+                }
                 printf("%Lf\n", res);
                 fflush(stdout);
                 break;
@@ -52,11 +55,10 @@ int main(void) {
         }
     }
     if (ferror(stdin)) {
-        fputs("Fatal: error occured while processing input", stderr);
+        fatal("error occured while processing input");
     }
 
-    STACK_FREE(ops_stk);
-    STACK_FREE(operands_stk);
+    eval_free(&state);
 
     return 0;
 }
