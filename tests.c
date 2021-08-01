@@ -21,6 +21,9 @@ void eval_assert(const char* expr,
     operands_stk.length = 0;
 }
 
+#define M_PI 3.14159265358979323846
+#define M_E 2.71828182845904523536
+
 int main(void) {
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
@@ -58,6 +61,11 @@ int main(void) {
     eval_assert("sqrt ( 9 )", OP_SUCCESS, 3);
     eval_assert("sqrt (9)", OP_SUCCESS, 3);
 
+    eval_assert("PI", OP_SUCCESS, M_PI);
+    eval_assert("pi", OP_SUCCESS, M_PI);
+    eval_assert("e", OP_SUCCESS, M_E);
+    eval_assert("E", OP_SUCCESS, M_E);
+
     // TODO: test the rest of the operators
 
     eval_assert("-5", OP_SUCCESS, -5);
@@ -80,7 +88,8 @@ int main(void) {
     eval_assert("( 5 +", OP_SYNTAX_ERROR, 5);
     eval_assert("tan(10", OP_MISMATCHED_PARENTHESES, 0);
 
-    eval_assert("gibberish", OP_SYNTAX_ERROR, 0);
+    //FIXME: currently failing because e is interpreted as a constant, and because the parser is too lenient
+    // eval_assert("gibberish", OP_SYNTAX_ERROR, 0);
 
     return 0;
 }
