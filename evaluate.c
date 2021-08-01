@@ -12,21 +12,19 @@
 
 static op_status eval_op_from_stk(ops_stack* ops_stk,
                                   operands_stack* operands_stk) {
-    const struct operator* op_struct;
-    do {
-        op_struct = STACK_POP(*ops_stk);
-    } while (op_struct->operands_num == 0 && ops_stk->length > 0);
-
+    const struct operator* op_struct = STACK_POP(*ops_stk);
     LOG_FMSG("op = '%s' , operands_num = '%u' , precedence = '%u'",
              op_struct->op, (unsigned)op_struct->operands_num,
              (unsigned)op_struct->precedence);
 
-    if (op_struct->operands_num == 0) {
-        LOG_MSG("op_struct->operands_num == 0 - mismatched parentheses?");
-        return OP_MISMATCHED_PARENTHESES;
-    }
-
     long double res = 0.0L;
+    if (op_struct->operands_num == 0) {
+        LOG_FMSG("evaluating '%s'", op_struct->op);
+        op_status ret = op_struct->cb(&res);
+        if (ret != OP_SUCCESS) {
+            return ret;
+        }
+    }
     if (op_struct->operands_num == 1) {
         if (operands_stk->length == 0) {
             LOG_FMSG(

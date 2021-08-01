@@ -236,6 +236,16 @@ static op_status log_base(long double* res, ...) {
     return OP_SUCCESS;
 }
 
+static op_status pi_constant(long double* res, ...) {
+    *res = 3.14159265358979323846;
+    return OP_SUCCESS;
+}
+
+static op_status e_constant(long double* res, ...) {
+    *res = 2.71828182845904523536;
+    return OP_SUCCESS;
+}
+
 static op_status op_abort(long double* res, ...) {
     fprintf(stderr, "BUG: Calling a callback on parentheses. Aborting...");
     exit(EXIT_FAILURE);
@@ -243,7 +253,7 @@ static op_status op_abort(long double* res, ...) {
     return OP_ERROR;
 }
 
-#define OPS_NUM 24
+#define OPS_NUM 26
 #define DEF_OP(_op, _cb, _operands_num, prec)                \
     (struct operator) {                                      \
         .op = _op, .cb = _cb, .operands_num = _operands_num, \
@@ -264,6 +274,7 @@ static const struct operator operators[OPS_NUM] = {
     DEF_OP("arctan", arctan, 1, 1),   DEF_OP("arcsinh", arcsinh, 1, 1),
     DEF_OP("arccosh", arccosh, 1, 1), DEF_OP("arctanh", arctanh, 1, 1),
     DEF_OP("ln", ln, 1, 1),           DEF_OP("log", log_base, 2, 1),
+    DEF_OP("PI", pi_constant, 0, 0),  DEF_OP("e", e_constant, 0, 0),
 };
 
 /* find a registered operator contained in `expr` */
