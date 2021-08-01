@@ -15,7 +15,7 @@ int main(void) {
     setbuf(stderr, NULL);
 
     eval_state state;
-    if(eval_init(&state) != OP_SUCCESS) {
+    if(!eval_init(&state)) {
         fatal("out of memory");
     }
 
