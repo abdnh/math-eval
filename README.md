@@ -4,6 +4,14 @@ This is just a math expression evaluator I wrote for fun and learning. Do not ta
 
 It's written in C, and I wish to add a Rust version in the future to practice my Rust skills.
 
+## Description
+
+The [Shunting-yard algorithm](https://en.wikipedia.org/wiki/Shunting-yard_algorithm) is used for parsing
+expressions written in [Infix notation](https://en.wikipedia.org/wiki/Infix_notation) (e.g. `5 + 3`).
+My implementation parses operators and operands and store each type in a seperate stack (`ops_stack` and `operands_stack`)
+for ease of computation, and doesn't provide a function to
+produce an expression in [Reverse Polish notation](https://en.wikipedia.org/wiki/Reverse_Polish_notation) yet.
+
 ## How to use
 
 To use as a library, copy the necessary sources (all but demo.c, debug.*, tests.c) to your project
