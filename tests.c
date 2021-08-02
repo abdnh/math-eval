@@ -131,6 +131,10 @@ int main(void) {
 
     eval_assert("gibberish", OP_SYNTAX_ERROR, 0);
     eval_assert("5+2 foobar", OP_SYNTAX_ERROR, 0);
+    eval_assert("", OP_EMPTY, 0);
+    eval_assert("  ", OP_EMPTY, 0);
+    eval_assert("4 4", OP_SYNTAX_ERROR, 0);
+    eval_assert("4 4 + 3", OP_SYNTAX_ERROR, 7);
 
     char expr_buf[100];
     sprintf(expr_buf, "%Lg + %Lg", LDBL_MAX, LDBL_MAX);

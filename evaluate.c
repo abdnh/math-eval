@@ -159,6 +159,7 @@ op_status eval_with_state(eval_state *state, const char *expr) {
             return OP_SYNTAX_ERROR;
         }
     }
+
     while (state->ops_stack.length) {
         struct operator* top_op = STACK_PEEK(state->ops_stack);
         if (!strcmp(top_op->op, ")") || !strcmp(top_op->op, "(")) {
@@ -176,6 +177,11 @@ op_status eval_with_state(eval_state *state, const char *expr) {
 
     if (!state->operands_stack.length) {
         return OP_EMPTY;
+    }
+    if (state->operands_stack.length > 1) {
+        // excess operands
+        LOG_OPR_STACK(state->operands_stack);
+        return OP_SYNTAX_ERROR;
     }
 
     return OP_SUCCESS;
