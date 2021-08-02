@@ -1,7 +1,7 @@
 .PHONY: all clean demo build-tests tests build build-demo demo
 .SUFFIXES:
 
-CFLAGS:=-Wall
+CFLAGS:=-Wall -pedantic
 OBJ_FILES:=evaluate.o ops.o debug.o
 
 all: demo

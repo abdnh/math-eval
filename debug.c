@@ -4,17 +4,16 @@
 #include <stdio.h>
 #include <time.h>
 
-
 #include "debug.h"
 
-void log_msg(FILE* fd,
-             const char* func,
-             const char* file,
+void log_msg(FILE *fd,
+             const char *func,
+             const char *file,
              int line,
-             const char* fmt,
+             const char *fmt,
              ...) {
     time_t t = time(NULL);
-    struct tm* lt = localtime(&t);
+    struct tm *lt = localtime(&t);
     static char time_buf[16];
     time_buf[strftime(time_buf, sizeof(time_buf), "%H:%M:%S", lt)] = '\0';
     fprintf(fd, "%s %s@%s:%d - ", time_buf, func, file, line);
@@ -24,5 +23,8 @@ void log_msg(FILE* fd,
     fputc('\n', fd);
     va_end(args);
 }
+
+#else
+void log_msg(void);
 
 #endif

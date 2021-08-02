@@ -10,7 +10,7 @@
 
 #include "ops.h"
 
-static op_status add(long double* res, ...) {
+static op_status add(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double operand_1 = va_arg(args, long double);
@@ -24,7 +24,7 @@ static op_status add(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status subtract(long double* res, ...) {
+static op_status subtract(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double operand_1 = va_arg(args, long double);
@@ -36,7 +36,7 @@ static op_status subtract(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status multiply(long double* res, ...) {
+static op_status multiply(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double operand_1 = va_arg(args, long double);
@@ -47,7 +47,7 @@ static op_status multiply(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status divide(long double* res, ...) {
+static op_status divide(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double operand_1 = va_arg(args, long double);
@@ -60,7 +60,7 @@ static op_status divide(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status power(long double* res, ...) {
+static op_status power(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double operand_1 = va_arg(args, long double);
@@ -71,7 +71,7 @@ static op_status power(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status square_root(long double* res, ...) {
+static op_status square_root(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double operand_1 = va_arg(args, long double);
@@ -80,7 +80,7 @@ static op_status square_root(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status modulo(long double* res, ...) {
+static op_status modulo(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -92,7 +92,7 @@ static op_status modulo(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status factorial(long double* res, ...) {
+static op_status factorial(long double *res, ...) {
     // FIXME: reject non-integers
     va_list args;
     va_start(args, res);
@@ -105,7 +105,7 @@ static op_status factorial(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status sine(long double* res, ...) {
+static op_status sine(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -114,7 +114,7 @@ static op_status sine(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status cosine(long double* res, ...) {
+static op_status cosine(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -123,7 +123,7 @@ static op_status cosine(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status tangent(long double* res, ...) {
+static op_status tangent(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -132,7 +132,7 @@ static op_status tangent(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status hsin(long double* res, ...) {
+static op_status hsin(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -141,7 +141,7 @@ static op_status hsin(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status hcos(long double* res, ...) {
+static op_status hcos(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -150,7 +150,7 @@ static op_status hcos(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status htan(long double* res, ...) {
+static op_status htan(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -159,7 +159,7 @@ static op_status htan(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status arcsin(long double* res, ...) {
+static op_status arcsin(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -168,7 +168,7 @@ static op_status arcsin(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status arccos(long double* res, ...) {
+static op_status arccos(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -177,7 +177,7 @@ static op_status arccos(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status arctan(long double* res, ...) {
+static op_status arctan(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -186,7 +186,7 @@ static op_status arctan(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status arcsinh(long double* res, ...) {
+static op_status arcsinh(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -195,7 +195,7 @@ static op_status arcsinh(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status arccosh(long double* res, ...) {
+static op_status arccosh(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -204,7 +204,7 @@ static op_status arccosh(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status arctanh(long double* res, ...) {
+static op_status arctanh(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -213,7 +213,7 @@ static op_status arctanh(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status ln(long double* res, ...) {
+static op_status ln(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double x = va_arg(args, long double);
@@ -222,7 +222,7 @@ static op_status ln(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status log_base(long double* res, ...) {
+static op_status log_base(long double *res, ...) {
     va_list args;
     va_start(args, res);
     long double base = va_arg(args, long double);
@@ -237,17 +237,17 @@ static op_status log_base(long double* res, ...) {
     return OP_SUCCESS;
 }
 
-static op_status pi_constant(long double* res, ...) {
+static op_status pi_constant(long double *res, ...) {
     *res = 3.14159265358979323846;
     return OP_SUCCESS;
 }
 
-static op_status e_constant(long double* res, ...) {
+static op_status e_constant(long double *res, ...) {
     *res = 2.71828182845904523536;
     return OP_SUCCESS;
 }
 
-static op_status op_abort(long double* res, ...) {
+static op_status op_abort(long double *res, ...) {
     fprintf(stderr, "BUG: Calling a callback on parentheses. Aborting...");
     exit(EXIT_FAILURE);
 
@@ -256,7 +256,7 @@ static op_status op_abort(long double* res, ...) {
 
 #define OPS_NUM 26
 #define DEF_OP(_op, _cb, _operands_num, prec)                \
-    (struct operator) {                                      \
+    (const struct operator) {                                      \
         .op = _op, .cb = _cb, .operands_num = _operands_num, \
         .precedence = prec                                   \
     }
@@ -279,7 +279,7 @@ static const struct operator operators[OPS_NUM] = {
 };
 
 /* find a registered operator contained in `expr` */
-int get_operator(struct operator* op_struct, const char* expr) {
+int get_operator(struct operator* op_struct, const char *expr) {
     const struct operator* cur_cand = NULL;
     unsigned char cur_cand_len = 0;
     for (unsigned char i = 0; i < OPS_NUM; i++) {

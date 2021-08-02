@@ -4,11 +4,11 @@
 #ifdef EVAL_DEBUG
 #include <stdio.h>
 
-void log_msg(FILE* fd,
-             const char* func,
-             const char* file,
+void log_msg(FILE *fd,
+             const char *func,
+             const char *file,
              int line,
-             const char* fmt,
+             const char *fmt,
              ...);
 
 #define LOG_MSG(msg) log_msg(stderr, __func__, __FILE__, __LINE__, msg)

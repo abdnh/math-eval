@@ -43,7 +43,7 @@ int main(void) {
             case OP_MISMATCHED_PARENTHESES:
                 error("mismatched parentheses");
                 break;
-            default: {
+            case OP_SUCCESS: {
                 long double res;
                 if (eval_get_result(&state, &res) != OP_SUCCESS) {
                     fatal("unknown error occured");
@@ -52,6 +52,8 @@ int main(void) {
                 fflush(stdout);
                 break;
             }
+            default:
+                fatal("unhandled return code");
         }
     }
     if (ferror(stdin)) {
