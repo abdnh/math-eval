@@ -1,8 +1,6 @@
 # Math Expression Evaluator
 
-This is just a math expression evaluator I wrote for fun and learning. Do not take seriously.
-
-It's written in C, and I wish to add a Rust version in the future to practice my Rust skills.
+This is just a math expression evaluator in C that I wrote for fun and learning. Do not take seriously.
 
 ## Description
 
@@ -20,7 +18,7 @@ See [evaluate.h](evaluate.h) for some docs and [demo.c](demo.c) for a usage exam
 
 ## Repo structure
 
-- [demo.c](demo.c) a demo program that takes user input, try to evaluate it as an expression, and prints the result.
+- [demo.c](demo.c) a simple calculator built using the library.
 - [evaluate.c](evaluate.c) uses the [Shunting-yard algorithm](https://en.wikipedia.org/wiki/Shunting-yard_algorithm)
 to evaluate expressions written in [infix notation](https://en.wikipedia.org/wiki/Infix_notation).
 - [ops.c](ops.c) defines the supported operations.
@@ -44,5 +42,5 @@ make tests
 
 ## TODO
 - More operations and constants
-- Rust version
 - Explore more algorithms for mathematical expression parsing
+- Rust version
