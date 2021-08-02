@@ -6,7 +6,7 @@
 
 #define error(msg) fprintf(stderr, "Error: %s\n", msg)
 
-#define fatal(msg) fprintf(stderr, "Fatal: %s\n", msg)
+#define fatal(msg) (fprintf(stderr, "Fatal: %s\n", msg), exit(EXIT_FAILURE))
 
 #define BUFFER_SIZE 1000
 
