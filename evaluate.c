@@ -95,7 +95,7 @@ op_status eval_with_state(eval_state *state, const char *expr) {
 
     struct operator op_struct;
     for (unsigned i = 0; expr[i]; i++) {
-        LOG_FMSG("expr starting from %zu : '%s'", i, expr + i);
+        LOG_FMSG("expr starting from %u : '%s'", i, expr + i);
 
         if (isdigit(expr[i])) {
             char *end;
@@ -167,7 +167,7 @@ op_status eval_with_state(eval_state *state, const char *expr) {
     LOG_FMSG(
         "finished evaluation - ops_stk->length = %zu , operands_stk->length = "
         "%zu",
-        ops_stk->length, operands_stk->length);
+        state->ops_stack.length, state->operands_stack.length);
 
     if (!state->operands_stack.length) {
         // not a math expression?
