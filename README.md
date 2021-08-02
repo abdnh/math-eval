@@ -44,3 +44,4 @@ make tests
 - More operations and constants
 - Explore more algorithms for mathematical expression parsing
 - Rust version
+- Use an arbitrary-precision arithmetic library to save myself from headaches
