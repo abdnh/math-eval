@@ -32,8 +32,10 @@ void eval_assert(const char *expr,
                  op_status expected_status,
                  long double expected_value) {
     op_status status = eval_with_state(&state, expr);
-    LOG_FMSG("expr = '%s' , expected_status = %d , expected_value = %Lf", expr,
-             expected_status, expected_value);
+    LOG_FMSG(
+        "expr = '%s' , expected_status = %d , expected_value = %Lg , status = "
+        "%d",
+        expr, expected_status, expected_value, status);
     assert(status == expected_status);
     if (status == OP_SUCCESS) {
         long double ret;
@@ -69,7 +71,7 @@ int main(void) {
     eval_assert("5 / 0", OP_DIV_BY_ZERO, 0);
 
     eval_assert("5 % 2", OP_SUCCESS, 1);
-    eval_assert("5 % 0", OP_DIV_BY_ZERO, 0);
+    eval_assert("5 % 0", OP_INVALID_OP, 0);
 
     eval_assert("5^2", OP_SUCCESS, 25);
     eval_assert("5^0", OP_SUCCESS, 1);
@@ -130,7 +132,12 @@ int main(void) {
     eval_assert("gibberish", OP_SYNTAX_ERROR, 0);
     eval_assert("5+2 foobar", OP_SYNTAX_ERROR, 0);
 
-    // TODO: test overflow, underflow, and other atrocities
+    char expr_buf[100];
+    sprintf(expr_buf, "%Lg + %Lg", LDBL_MAX, LDBL_MAX);
+    eval_assert(expr_buf, OP_OVERFLOW, 0);
+
+    sprintf(expr_buf, "%Lg * %Lg", LDBL_MIN, LDBL_MIN);
+    eval_assert(expr_buf, OP_UNDERFLOW, 0);
 
     eval_free(&state);
 

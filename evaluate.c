@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <errno.h>
+#include <fenv.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +37,7 @@ static op_status eval_op_from_stk(eval_state *state) {
     long double res = 0.0L;
     if (op_struct->operands_num == 0) {
         LOG_FMSG("evaluating '%s'", op_struct->op);
+        feclearexcept(FE_ALL_EXCEPT);
         op_status ret = op_struct->cb(&res);
         if (ret != OP_SUCCESS) {
             return ret;
@@ -49,7 +51,8 @@ static op_status eval_op_from_stk(eval_state *state) {
             return OP_SYNTAX_ERROR;
         }
         long double operand_1 = STACK_POP(state->operands_stack)->value;
-        LOG_FMSG("evaluating '%s' '%Lf'", op_struct->op, operand_1);
+        LOG_FMSG("evaluating '%s' '%Lg'", op_struct->op, operand_1);
+        feclearexcept(FE_ALL_EXCEPT);
         op_status ret = op_struct->cb(&res, operand_1);
         if (ret != OP_SUCCESS)
             return ret;
@@ -75,12 +78,13 @@ static op_status eval_op_from_stk(eval_state *state) {
         long double val_2 = op2 ? op2->value : 0;
         long double val_1 = op1 ? op1->value : 0;
 
-        LOG_FMSG("evaluating '%Lf' '%s' '%Lf'", val_1, op_struct->op, val_2);
+        LOG_FMSG("evaluating '%Lg' '%s' '%Lg'", val_1, op_struct->op, val_2);
+        feclearexcept(FE_ALL_EXCEPT);
         op_status ret = op_struct->cb(&res, val_1, val_2);
         if (ret != OP_SUCCESS)
             return ret;
     }
-    LOG_FMSG("pushing result %Lf", res);
+    LOG_FMSG("pushing result %Lg", res);
     struct operand opr = {.value = res};
     if (STACK_PUSH(state->operands_stack, opr))
         return OP_ERROR;
@@ -100,12 +104,13 @@ op_status eval_with_state(eval_state *state, const char *expr) {
         if (isdigit(expr[i])) {
             char *end;
             struct operand opr;
+            errno = 0;
             opr.value = strtold(&expr[i], &end);
             if (errno == ERANGE)
                 return OP_OVERFLOW;
             opr.pos = i;
             i += (end - &expr[i] - 1);
-            LOG_FMSG("pushing operand %Lf", opr.value);
+            LOG_FMSG("pushing operand %Lg", opr.value);
             if (STACK_PUSH(state->operands_stack, opr))
                 return OP_ERROR;
         } else if (get_operator(&op_struct, &expr[i])) {

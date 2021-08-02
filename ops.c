@@ -1,4 +1,6 @@
 #include <ctype.h>
+#include <errno.h>
+#include <fenv.h>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
@@ -8,7 +10,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "debug.h"
 #include "ops.h"
+
+#pragma STDC FENV_ACCESS ON
+
+static op_status op_status_for_fenv_except() {
+    int exceptions =
+        fetestexcept(FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW | FE_INVALID);
+    if (exceptions & FE_DIVBYZERO)
+        return OP_DIV_BY_ZERO;
+    else if (exceptions & FE_OVERFLOW)
+        return OP_OVERFLOW;
+    else if (exceptions & FE_UNDERFLOW)
+        return OP_UNDERFLOW;
+    else if (exceptions & FE_INVALID)
+        return OP_INVALID_OP;
+    return OP_SUCCESS;
+}
 
 static op_status add(long double *res, ...) {
     va_list args;
@@ -16,12 +35,8 @@ static op_status add(long double *res, ...) {
     long double operand_1 = va_arg(args, long double);
     long double operand_2 = va_arg(args, long double);
     va_end(args);
-    /* FIXME: does not detect overflow properly? Floating point numbers are a
-     * PITA! */
-    if (operand_1 > LDBL_MAX - operand_2)
-        return OP_OVERFLOW;
     *res = operand_1 + operand_2;
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status subtract(long double *res, ...) {
@@ -30,10 +45,8 @@ static op_status subtract(long double *res, ...) {
     long double operand_1 = va_arg(args, long double);
     long double operand_2 = va_arg(args, long double);
     va_end(args);
-    if (operand_1 < -LDBL_MAX + operand_2)
-        return OP_UNDERFLOW;
     *res = operand_1 - operand_2;
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status multiply(long double *res, ...) {
@@ -42,9 +55,8 @@ static op_status multiply(long double *res, ...) {
     long double operand_1 = va_arg(args, long double);
     long double operand_2 = va_arg(args, long double);
     va_end(args);
-    /* FIXME: check for overflow. */
     *res = operand_1 * operand_2;
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status divide(long double *res, ...) {
@@ -53,11 +65,8 @@ static op_status divide(long double *res, ...) {
     long double operand_1 = va_arg(args, long double);
     long double operand_2 = va_arg(args, long double);
     va_end(args);
-    if (operand_2 == 0)
-        return OP_DIV_BY_ZERO;
-    /* FIXME: check for overflow. */
     *res = operand_1 / operand_2;
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status power(long double *res, ...) {
@@ -66,9 +75,8 @@ static op_status power(long double *res, ...) {
     long double operand_1 = va_arg(args, long double);
     long double operand_2 = va_arg(args, long double);
     va_end(args);
-    /* FIXME: check for overflow. */
     *res = powl(operand_1, operand_2);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status square_root(long double *res, ...) {
@@ -77,7 +85,7 @@ static op_status square_root(long double *res, ...) {
     long double operand_1 = va_arg(args, long double);
     va_end(args);
     *res = sqrtl(operand_1);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status modulo(long double *res, ...) {
@@ -86,10 +94,8 @@ static op_status modulo(long double *res, ...) {
     long double x = va_arg(args, long double);
     long double y = va_arg(args, long double);
     va_end(args);
-    if (!y)
-        return OP_DIV_BY_ZERO;
     *res = fmodl(x, y);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status factorial(long double *res, ...) {
@@ -102,7 +108,7 @@ static op_status factorial(long double *res, ...) {
     for (long double i = 2; i <= x; i++) {
         *res *= i;
     }
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status sine(long double *res, ...) {
@@ -111,7 +117,7 @@ static op_status sine(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = sinl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status cosine(long double *res, ...) {
@@ -120,7 +126,7 @@ static op_status cosine(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = cosl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status tangent(long double *res, ...) {
@@ -129,7 +135,7 @@ static op_status tangent(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = tanl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status hsin(long double *res, ...) {
@@ -138,7 +144,7 @@ static op_status hsin(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = sinhl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status hcos(long double *res, ...) {
@@ -147,7 +153,7 @@ static op_status hcos(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = coshl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status htan(long double *res, ...) {
@@ -156,7 +162,7 @@ static op_status htan(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = tanhl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status arcsin(long double *res, ...) {
@@ -165,7 +171,7 @@ static op_status arcsin(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = asinl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status arccos(long double *res, ...) {
@@ -174,7 +180,7 @@ static op_status arccos(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = acosl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status arctan(long double *res, ...) {
@@ -183,7 +189,7 @@ static op_status arctan(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = atanl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status arcsinh(long double *res, ...) {
@@ -192,7 +198,7 @@ static op_status arcsinh(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = asinhl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status arccosh(long double *res, ...) {
@@ -201,7 +207,7 @@ static op_status arccosh(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = acoshl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status arctanh(long double *res, ...) {
@@ -210,7 +216,7 @@ static op_status arctanh(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = atanhl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status ln(long double *res, ...) {
@@ -219,7 +225,7 @@ static op_status ln(long double *res, ...) {
     long double x = va_arg(args, long double);
     va_end(args);
     *res = logl(x);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status log_base(long double *res, ...) {
@@ -234,7 +240,7 @@ static op_status log_base(long double *res, ...) {
         *res = log10l(x);
     } else
         *res = logl(x) / logl(base);
-    return OP_SUCCESS;
+    return op_status_for_fenv_except();
 }
 
 static op_status pi_constant(long double *res, ...) {
@@ -256,7 +262,7 @@ static op_status op_abort(long double *res, ...) {
 
 #define OPS_NUM 26
 #define DEF_OP(_op, _cb, _operands_num, prec)                \
-    (const struct operator) {                                      \
+    (const struct operator) {                                \
         .op = _op, .cb = _cb, .operands_num = _operands_num, \
         .precedence = prec                                   \
     }

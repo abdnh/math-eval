@@ -43,6 +43,9 @@ int main(void) {
             case OP_MISMATCHED_PARENTHESES:
                 error("mismatched parentheses");
                 break;
+            case OP_INVALID_OP:
+                error("invalid operation");
+                break;
             case OP_SUCCESS: {
                 long double res;
                 if (eval_get_result(&state, &res) != OP_SUCCESS) {

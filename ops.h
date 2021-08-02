@@ -6,7 +6,8 @@
 
 #include "debug.h"
 
-// the status codes that can be returned by various operation callbacks in addition to the functions in evaluate.h
+// the status codes that can be returned by various operation callbacks in
+// addition to the functions in evaluate.h
 typedef enum op_status {
     OP_SUCCESS,
     OP_ERROR,
@@ -15,12 +16,13 @@ typedef enum op_status {
     OP_OVERFLOW,
     OP_UNDERFLOW,
     OP_MISMATCHED_PARENTHESES,
+    OP_INVALID_OP,
 } op_status;
 
-typedef op_status (*op_cb)(long double*, ...);
+typedef op_status (*op_cb)(long double *, ...);
 
 struct operator{
-    char* op;
+    char *op;
     op_cb cb;
     unsigned char operands_num;
     unsigned char precedence;  // lower values = higher precedence
@@ -32,6 +34,6 @@ struct operand {
     unsigned pos;  // start index in expression string
 };
 
-int get_operator(struct operator* op_struct, const char* expr);
+int get_operator(struct operator* op_struct, const char *expr);
 
 #endif /* OPS_H */
