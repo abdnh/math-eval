@@ -48,7 +48,7 @@ int main(void) {
                 if (eval_get_result(&state, &res) != OP_SUCCESS) {
                     fatal("unknown error occured");
                 }
-                printf("%Lf\n", res);
+                printf("%Lg\n", res);
                 fflush(stdout);
                 break;
             }
