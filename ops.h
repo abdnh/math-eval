@@ -17,6 +17,7 @@ typedef enum op_status {
     OP_UNDERFLOW,
     OP_MISMATCHED_PARENTHESES,
     OP_INVALID_OP,
+    OP_EMPTY,
 } op_status;
 
 typedef op_status (*op_cb)(long double *, ...);

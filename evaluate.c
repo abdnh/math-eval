@@ -175,8 +175,7 @@ op_status eval_with_state(eval_state *state, const char *expr) {
         state->ops_stack.length, state->operands_stack.length);
 
     if (!state->operands_stack.length) {
-        // not a math expression?
-        return OP_SYNTAX_ERROR;
+        return OP_EMPTY;
     }
 
     return OP_SUCCESS;

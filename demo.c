@@ -55,6 +55,8 @@ int main(void) {
                 fflush(stdout);
                 break;
             }
+            case OP_EMPTY:
+                break;
             default:
                 fatal("unhandled return code");
         }
