@@ -1,6 +1,6 @@
 # Math Expression Evaluator
 
-This is just a math expression evaluator in C that I wrote for fun and learning. Do not take seriously.
+This is just a math expression evaluator in C that I wrote for fun and learning.
 
 ## Description
 
