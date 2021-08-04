@@ -6,7 +6,7 @@ This is just a math expression evaluator in C that I wrote for fun and learning.
 
 The [Shunting-yard algorithm](https://en.wikipedia.org/wiki/Shunting-yard_algorithm) is used for parsing
 expressions written in [Infix notation](https://en.wikipedia.org/wiki/Infix_notation) (e.g. `5 + 3`).
-My implementation parses operators and operands and store each type in a seperate stack (`ops_stack` and `operands_stack`)
+My implementation parses operators and operands and store each type in a separate stack (`ops_stack` and `operands_stack`)
 for ease of computation, and doesn't provide a function to
 produce an expression in [Reverse Polish notation](https://en.wikipedia.org/wiki/Reverse_Polish_notation) yet.
 
