@@ -262,7 +262,7 @@ static op_status op_abort(long double *res, ...) {
 
 #define OPS_NUM 26
 #define DEF_OP(_op, _cb, _operands_num, prec)                \
-    (const struct operator) {                                \
+    (struct operator) {                                      \
         .op = _op, .cb = _cb, .operands_num = _operands_num, \
         .precedence = prec                                   \
     }
