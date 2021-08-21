@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fenv.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,7 +86,7 @@ static op_status eval_op_from_stk(eval_state *state) {
             return ret;
     }
     LOG_FMSG("pushing result %Lg", res);
-    struct operand opr = {.value = res};
+    struct operand opr = {.value = res, .pos = UINT_MAX};
     if (STACK_PUSH(state->operands_stack, opr))
         return OP_ERROR;
 

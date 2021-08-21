@@ -111,6 +111,7 @@ int main(void) {
 
     eval_assert("-5", OP_SUCCESS, -5);
     eval_assert("- 5", OP_SUCCESS, -5);
+    eval_assert("-4 * 5 + 2", OP_SUCCESS, -18);
     eval_assert("5 -", OP_SYNTAX_ERROR, 5);
     eval_assert("+5", OP_SUCCESS, 5);
     eval_assert("+ 5", OP_SUCCESS, 5);
