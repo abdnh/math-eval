@@ -1,6 +1,7 @@
 # Math Expression Evaluator
 
 This is just a math expression evaluator in C that I wrote for fun and learning.
+If you want a production-quality library, take a look at [TinyExpr](https://github.com/codeplea/tinyexpr).
 
 ## Description
 
@@ -45,3 +46,5 @@ make tests
 - Explore more algorithms for mathematical expression parsing
 - Rust version
 - Use an arbitrary-precision arithmetic library to save myself from headaches
+- Maybe do not just assume all operators are left-associative. Right now, `2^2^3` is interprted as `(2^2)^3`,
+  which can be confusing. Related: https://codeplea.com/exponentiation-associativity-options
