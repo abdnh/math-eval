@@ -75,6 +75,7 @@ int main(void) {
 
     eval_assert("5^2", OP_SUCCESS, 25);
     eval_assert("5^0", OP_SUCCESS, 1);
+    eval_assert("2^2^3", OP_SUCCESS, 256);
 
     eval_assert("3!", OP_SUCCESS, 6);
     eval_assert("3 !", OP_SUCCESS, 6);

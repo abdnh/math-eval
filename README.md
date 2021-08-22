@@ -46,5 +46,5 @@ make tests
 - Explore more algorithms for mathematical expression parsing
 - Rust version
 - Use an arbitrary-precision arithmetic library to save myself from headaches
-- Maybe do not just assume all operators are left-associative. Right now, `2^2^3` is interprted as `(2^2)^3`,
-  which can be confusing. Related: https://codeplea.com/exponentiation-associativity-options
+- [Operator associativity](https://en.wikipedia.org/wiki/Operator_associativity). Currently, the exponentiation operator (^) is special-cased to be right-associative.
+  If I'll ever add more right-associative operators, I should modify the `operator` struct to store associativity and remove the special case.

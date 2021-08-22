@@ -142,8 +142,11 @@ op_status eval_with_state(eval_state *state, const char *expr) {
             } else {
                 struct operator* top_op;
                 while ((top_op = STACK_PEEK(state->ops_stack)) &&
-                       op_struct.precedence >= top_op->precedence &&
-                       strcmp(top_op->op, "(")) {
+                       strcmp(top_op->op, "(") &&
+                       (op_struct.precedence > top_op->precedence ||
+                        (op_struct.precedence == top_op->precedence &&
+                         !(!strcmp(op_struct.op, "^") &&
+                           !strcmp(op_struct.op, top_op->op))))) {
                     op_status ret = eval_op_from_stk(state);
                     if (ret != OP_SUCCESS)
                         return ret;
